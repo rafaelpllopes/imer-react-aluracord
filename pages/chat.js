@@ -1,10 +1,12 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
+import { render } from 'react-dom';
 import appConfig from '../config.json';
 
 export default function ChatPage() {
     const [mensagem, setMensagem] = React.useState()
     const [listaDeMensagens, setListaDeMensagens] = React.useState([])
+
     /*
         // Usuário
         - Usuário digita no campo textarea
@@ -114,7 +116,6 @@ export default function ChatPage() {
                                 handleNovaMensagem(mensagem)
                             }}
                             variant='primary'
-                            // colorVariant='neutral'
                             label='Enviar'
                         />
                     </Box>
@@ -142,7 +143,7 @@ function Header() {
     )
 }
 
-function MessageList(props) {
+function MessageList(props) {    
     return (
         <Box
             tag="ul"
@@ -197,6 +198,13 @@ function MessageList(props) {
                             >
                                 {(new Date().toLocaleDateString())}
                             </Text>
+
+                            <Button
+                                onClick={() => handleDeleteMensagem(mensagem.id)}
+                                variant='secondary'
+                                colorVariant='negative'
+                                label='X'
+                            />
                         </Box>
                         {mensagem.texto}
                     </Text>
