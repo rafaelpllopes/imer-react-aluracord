@@ -1,11 +1,26 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
-import React from 'react';
-import { render } from 'react-dom';
+import React, { useEffect, useState } from 'react';
 import appConfig from '../config.json';
+import { createClient } from '@supabase/supabase-js'
+
+const SUPABASE_ANON_KEY = ''
+const SUPABASE_URL = ''
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 export default function ChatPage() {
-    const [mensagem, setMensagem] = React.useState()
-    const [listaDeMensagens, setListaDeMensagens] = React.useState([])
+    const [mensagem, setMensagem] = useState()
+    const [listaDeMensagens, setListaDeMensagens] = useState([])
+
+    useEffect(() => {
+        supabaseClient
+            .from('mensagens')
+            .select('*')
+            .order('id', { ascending: false })
+            .then(({ data }) => {
+                setListaDeMensagens(data)
+            })
+    }, [])
+
 
     /*
         // Usuário
@@ -22,15 +37,20 @@ export default function ChatPage() {
     function handleNovaMensagem(novaMensagem) {
         if (!novaMensagem) return
         const mensagem = {
-            id: listaDeMensagens.length + 1,
             de: 'rafaelpllopes',
             texto: novaMensagem
         }
 
-        setListaDeMensagens([
-            mensagem,
-            ...listaDeMensagens,
-        ])
+        supabaseClient
+            .from('mensagens')
+            .insert([mensagem])
+            .then(({ data }) => {
+                setListaDeMensagens([
+                    data[0],
+                    ...listaDeMensagens
+                ])
+            })
+
         setMensagem('')
     }
 
@@ -143,7 +163,7 @@ function Header() {
     )
 }
 
-function MessageList(props) {    
+function MessageList(props) {
     return (
         <Box
             tag="ul"
