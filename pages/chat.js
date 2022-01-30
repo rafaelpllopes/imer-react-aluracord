@@ -18,6 +18,7 @@ export default function ChatPage() {
     */
 
     function handleNovaMensagem(novaMensagem) {
+        if (!novaMensagem) return
         const mensagem = {
             id: listaDeMensagens.length + 1,
             de: 'rafaelpllopes',
@@ -107,6 +108,14 @@ export default function ChatPage() {
                                 marginRight: '12px',
                                 color: appConfig.theme.colors.neutrals[200],
                             }}
+                        />
+                        <Button
+                            onClick={() => {
+                                handleNovaMensagem(mensagem)
+                            }}
+                            variant='primary'
+                            // colorVariant='neutral'
+                            label='Enviar'
                         />
                     </Box>
                 </Box>
