@@ -1,15 +1,28 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React, { useEffect, useState } from 'react';
 import appConfig from '../config.json';
+import { useRouter } from 'next/router'
 import { createClient } from '@supabase/supabase-js'
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker'
 
 const SUPABASE_ANON_KEY = ''
 const SUPABASE_URL = ''
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+function escutaMensagensEmTempoReal(adicionaMensagem) {
+    return supabaseClient
+        .from('mensagens')
+        .on('INSERT', (respostaLive) => {
+            adicionaMensagem(respostaLive.new)
+        })
+        .subscribe()
+}
+
 export default function ChatPage() {
     const [mensagem, setMensagem] = useState()
     const [listaDeMensagens, setListaDeMensagens] = useState([])
+    const roteamento = useRouter()
+    const { username } = roteamento.query
 
     useEffect(() => {
         supabaseClient
@@ -19,6 +32,14 @@ export default function ChatPage() {
             .then(({ data }) => {
                 setListaDeMensagens(data)
             })
+        escutaMensagensEmTempoReal((novaMensagem) => {
+            setListaDeMensagens((valorAtualDaLista) => {
+                return [
+                    novaMensagem,
+                    ...valorAtualDaLista
+                ]
+            })
+        })
     }, [])
 
 
@@ -37,7 +58,7 @@ export default function ChatPage() {
     function handleNovaMensagem(novaMensagem) {
         if (!novaMensagem) return
         const mensagem = {
-            de: 'rafaelpllopes',
+            de: username,
             texto: novaMensagem
         }
 
@@ -45,10 +66,7 @@ export default function ChatPage() {
             .from('mensagens')
             .insert([mensagem])
             .then(({ data }) => {
-                setListaDeMensagens([
-                    data[0],
-                    ...listaDeMensagens
-                ])
+                console.log('')
             })
 
         setMensagem('')
@@ -131,13 +149,16 @@ export default function ChatPage() {
                                 color: appConfig.theme.colors.neutrals[200],
                             }}
                         />
-                        <Button
+                        <ButtonSendSticker onStickerClick={(sticker) => {
+                            handleNovaMensagem(`:sticker:${sticker}`)
+                        }} />
+                        {/* <Button
                             onClick={() => {
                                 handleNovaMensagem(mensagem)
                             }}
                             variant='primary'
                             label='Enviar'
-                        />
+                        /> */}
                     </Box>
                 </Box>
             </Box>
@@ -226,7 +247,16 @@ function MessageList(props) {
                                 label='X'
                             />
                         </Box>
-                        {mensagem.texto}
+                        {
+                            mensagem.texto.startsWith(':sticker:')
+                                ? (
+                                    <Image src={mensagem.texto.replace(':sticker:', '')} />
+                                )
+                                : (
+                                    mensagem.texto
+                                )
+                        }
+                        {/* {mensagem.texto} */}
                     </Text>
                 )
             })}
